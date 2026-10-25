@@ -1,19 +1,19 @@
 {
-    "name": "YOUR_PACKAGE_ID_LOWERCASE",
-    "displayName": "YOUR_PACKAGE_NAME",
+    "name": "com.severnbli.magic-off",
+    "displayName": "Magic Off",
     "author": {
         "name": "Severnbli",
         "url": "https://github.com/Severnbli"
     },
     "keywords": [
-        "keyword1",
-        "keyword2"
+        "Code Generation",
+	"Magic strings"
     ],
     "version": "1.0.0",
     "unity": "2021.3",
-    "description": "Some description",
-    "documentationUrl": "https://github.com/YOUR_GITHUB_USERNAME_REPOSITORY/blob/main/README.md",
-    "changelogUrl": "https://github.com/YOUR_GITHUB_USERNAME_REPOSITORY/blob/main/CHANGELOG.md",
-    "licensesUrl": "https://github.com/YOUR_GITHUB_USERNAME_REPOSITORY/blob/main/LICENSE",
+    "description": "Generates strongly typed C# constants for Unity’s magic strings: localization, tags, layers, scenes, sorting layers, input actions, animator parameters, shader properties and Resources paths. A typo becomes a compile error, and you get autocomplete.",
+    "documentationUrl": "https://github.com/Severnbli/magic-off/blob/main/README.md",
+    "changelogUrl": "https://github.com/Severnbli/magic-off/blob/main/CHANGELOG.md",
+    "licensesUrl": "https://github.com/Severnbli/magic-off/blob/main/LICENSE",
     "dependencies": {}
 }

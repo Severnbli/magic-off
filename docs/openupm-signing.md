@@ -1,14 +1,14 @@
 # OpenUPM Package Signing
 
-> **Template note:** `commands/init.sh` (or `init.ps1` on Windows) replaces `YOUR_PACKAGE_ID` (your
+> **Template note:** `commands/init.sh` (or `init.ps1` on Windows) replaces `com.severnbli.magic-off` (your
 > reverse-domain package id, e.g. `com.company.package`) and
-> `YOUR_GITHUB_USERNAME_REPOSITORY` (your `owner/repo` slug) in this document,
+> `Severnbli/magic-off` (your `owner/repo` slug) in this document,
 > the same way it does in `.github/workflows/release.yml`.
 
 Unity 6.3 introduced a package-signature check that surfaces a trust warning for
 unsigned UPM packages installed from third-party registries (including OpenUPM).
 This document describes how a package built from this template signs its
-`YOUR_PACKAGE_ID` package so the warning no longer appears in Unity 6.3+.
+`com.severnbli.magic-off` package so the warning no longer appears in Unity 6.3+.
 
 ## How signing works
 
@@ -30,7 +30,7 @@ The signing step is implemented as the `build-signed-upm-package` job in
 manually triggered release, packs the package at
 `Unity-Package/Assets/root/` with Unity's UPM CLI, verifies the resulting archive
 contains `package/.attestation.p7m` and that its basename begins with
-`YOUR_PACKAGE_ID-`, renames it to `tarball-YOUR_PACKAGE_ID-<version>.tgz` and
+`com.severnbli.magic-off-`, renames it to `tarball-com.severnbli.magic-off-<version>.tgz` and
 uploads it as a `release-upm-tarball` workflow artifact.
 
 The artifact is then consumed by the atomic publish step in `release-unity-plugin`,
@@ -91,9 +91,9 @@ In this repo's Settings → Secrets and variables → Actions, add:
 CLI equivalent:
 
 ```bash
-gh secret set UPM_SERVICE_ACCOUNT_KEY_ID     --repo YOUR_GITHUB_USERNAME_REPOSITORY
-gh secret set UPM_SERVICE_ACCOUNT_KEY_SECRET --repo YOUR_GITHUB_USERNAME_REPOSITORY
-gh secret set UPM_ORG_ID                     --repo YOUR_GITHUB_USERNAME_REPOSITORY
+gh secret set UPM_SERVICE_ACCOUNT_KEY_ID     --repo Severnbli/magic-off
+gh secret set UPM_SERVICE_ACCOUNT_KEY_SECRET --repo Severnbli/magic-off
+gh secret set UPM_ORG_ID                     --repo Severnbli/magic-off
 ```
 
 ### 3. Make sure the org is authorized to sign your namespace
@@ -105,7 +105,7 @@ to sign package … with the provided credentials and organization`:
   A key from a different org will authenticate but not be allowed to sign.
 - That **organization must be authorized to sign your package's namespace** – the
   reverse-domain name in `package.json` (e.g. `com.company.package`, i.e.
-  `YOUR_PACKAGE_ID`).
+  `com.severnbli.magic-off`).
 - A brand-new org will **not** be authorized for a namespace until it **claims**
   it. The UPM CLI can only *sign* a namespace the org already owns – it cannot
   *claim* one. To claim it, do a **one-time interactive sign in the Unity Editor**:
@@ -131,14 +131,14 @@ to sign package … with the provided credentials and organization`:
 
 ### 4. File the OpenUPM listing change
 
-If you publish via OpenUPM, OpenUPM's package listing for `YOUR_PACKAGE_ID` likely
+If you publish via OpenUPM, OpenUPM's package listing for `com.severnbli.magic-off` likely
 starts with `trackingMode: git`, which makes OpenUPM pack and serve unsigned
 tarballs from the repository's git tags. To make OpenUPM serve the signed tarball
 that the workflow now uploads, the listing must be flipped to
 `trackingMode: githubRelease`.
 
 The listing lives in the [openupm/openupm](https://github.com/openupm/openupm)
-repository at `data/packages/YOUR_PACKAGE_ID.yml`. Open a PR there changing:
+repository at `data/packages/com.severnbli.magic-off.yml`. Open a PR there changing:
 
 ```yaml
 trackingMode: git
@@ -160,7 +160,7 @@ two `.unitypackage` files, and may add more assets later, so the prefix guard
 prevents a future-breaking failure mode):
 
 ```yaml
-githubReleaseAssetName: 'tarball-YOUR_PACKAGE_ID-'
+githubReleaseAssetName: 'tarball-com.severnbli.magic-off-'
 ```
 
 ## Verifying signing worked
@@ -168,7 +168,7 @@ githubReleaseAssetName: 'tarball-YOUR_PACKAGE_ID-'
 After the next release ships:
 
 1. Go to the release page for the new version and confirm a
-   `tarball-YOUR_PACKAGE_ID-<version>.tgz` asset is attached alongside the
+   `tarball-com.severnbli.magic-off-<version>.tgz` asset is attached alongside the
    `.unitypackage` files. The single-step publish runs only after the signed tarball is
    built and verified, so a successful release run should always include the
    signed asset.
@@ -176,7 +176,7 @@ After the next release ships:
 
    ```bash
    curl -fsSL -o package.tgz \
-     https://github.com/YOUR_GITHUB_USERNAME_REPOSITORY/releases/download/<version>/tarball-YOUR_PACKAGE_ID-<version>.tgz
+     https://github.com/Severnbli/magic-off/releases/download/<version>/tarball-com.severnbli.magic-off-<version>.tgz
    tar -tzf package.tgz | grep '\.attestation\.p7m$'
    # expected: package/.attestation.p7m
    ```
