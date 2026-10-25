@@ -1,0 +1,78 @@
+name: test-unity-plugin
+
+# Runs one Unity test mode for one project. Called by test.yml for every
+# matrix cell (and for the Installer project).
+#
+# Fork PRs do not receive secrets, so Unity activation fails for outside
+# contributors. That is intentional here (no pull_request_target).
+on:
+  workflow_call:
+    inputs:
+      projectPath: { required: true, type: string }
+      unityVersion: { required: true, type: string }
+      testMode: { required: true, type: string }
+      # Short project label for check, job and artifact names (paths contain '/').
+      label: { required: false, type: string, default: plugin }
+    secrets:
+      UNITY_LICENSE: { required: true }
+      UNITY_EMAIL: { required: true }
+      UNITY_PASSWORD: { required: true }
+
+# Allow the test runner to publish results as a check run.
+permissions:
+  contents: read
+  checks: write
+
+jobs:
+  test:
+    name: ${{ inputs.label }} ${{ inputs.unityVersion }} ${{ inputs.testMode }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      # The editor image needs more room than a stock runner has. Deleting the
+      # preinstalled SDKs is a quick `rm -rf`; uninstalling apt packages
+      # (large-packages) takes minutes and is not needed for the space.
+      - name: Free disk space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: false
+          swap-storage: true
+
+      # Library/ is shared by every test mode of a project and editor version,
+      # so one cache serves editmode, playmode and standalone. The key changes
+      # whenever the package set changes; restore-keys falls back to the most
+      # recent cache of the same project and version.
+      - uses: actions/cache@v6.1.0
+        with:
+          path: ${{ inputs.projectPath }}/Library
+          key: Library-${{ inputs.label }}-${{ inputs.unityVersion }}-${{ hashFiles(format('{0}/Packages/manifest.json', inputs.projectPath), format('{0}/Packages/packages-lock.json', inputs.projectPath)) }}
+          restore-keys: |
+            Library-${{ inputs.label }}-${{ inputs.unityVersion }}-
+
+      - uses: game-ci/unity-test-runner@v4
+        id: tests
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: ${{ inputs.projectPath }}
+          unityVersion: ${{ inputs.unityVersion }}
+          testMode: ${{ inputs.testMode }}
+          customImage: unityci/editor:ubuntu-${{ inputs.unityVersion }}-base-3
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          checkName: ${{ inputs.label }} ${{ inputs.unityVersion }} ${{ inputs.testMode }} Test Results
+          artifactsPath: artifacts
+          customParameters: -CI true -GITHUB_ACTIONS true
+
+      - uses: actions/upload-artifact@v7.0.2
+        if: always()
+        with:
+          name: test-results-${{ inputs.label }}-${{ inputs.unityVersion }}-${{ inputs.testMode }}
+          path: ${{ steps.tests.outputs.artifactsPath }}
+          retention-days: 7
